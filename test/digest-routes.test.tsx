@@ -8,7 +8,17 @@ import type { Night } from '../src/digest/types.js';
 const dir = mkdtempSync(join(tmpdir(), 'rig-'));
 const config = { adapter: 'shim', installed: '2026-10-29T14:06:00+01:00', beatEverySeconds: 60, runsDir: dir };
 
-const real = readFileSync(join('runs', '2026-10-28.jsonl'), 'utf8');
+// runs/2026-10-28.jsonl ends on a truncated line; keep only the lines that parse, so the
+// bad-line night below has exactly one.
+const parses = (line: string) => {
+  try {
+    JSON.parse(line);
+    return true;
+  } catch {
+    return false;
+  }
+};
+const real = `${readFileSync(join('runs', '2026-10-28.jsonl'), 'utf8').split('\n').filter(parses).join('\n')}\n`;
 
 beforeAll(() => {
   writeFileSync(join(dir, '2026-10-28.jsonl'), real);
